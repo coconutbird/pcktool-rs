@@ -1,0 +1,11 @@
+[package]
+name = "pcktool"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Zero-copy library for parsing and writing Wwise PCK/BNK audio packages"
+
+[dependencies]
+zerocopy.workspace = true
+hashbrown = "0.15"

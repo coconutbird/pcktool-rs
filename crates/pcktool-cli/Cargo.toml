@@ -1,0 +1,17 @@
+[package]
+name = "pcktool-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "CLI tool for manipulating Wwise PCK/BNK audio packages"
+
+[[bin]]
+name = "pcktool"
+path = "src/main.rs"
+
+[dependencies]
+pcktool.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+memmap2.workspace = true

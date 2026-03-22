@@ -1,0 +1,17 @@
+[workspace]
+members = ["crates/pcktool", "crates/pcktool-cli"]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+version = "0.1.0"
+license = "MIT"
+repository = "https://github.com/coconutbird/pcktool-rs"
+
+[workspace.dependencies]
+pcktool = { path = "crates/pcktool" }
+zerocopy = { version = "0.8", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
+anyhow = "1"
+memmap2 = "0.9"
+
