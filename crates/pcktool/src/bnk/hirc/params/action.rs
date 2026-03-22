@@ -1,9 +1,9 @@
 //! Action-specific parameter types and playlist/exception types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone)]
 pub struct PlaylistItem {
@@ -19,7 +19,10 @@ pub struct Playlist {
 impl Playlist {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let items = r.read_list_u16(|r| {
-            Ok(PlaylistItem { play_id: r.read_i32()?, weight: r.read_i32()? })
+            Ok(PlaylistItem {
+                play_id: r.read_i32()?,
+                weight: r.read_i32()?,
+            })
         })?;
         Ok(Self { items })
     }
@@ -40,10 +43,16 @@ pub struct RandomizerModifier {
 
 impl RandomizerModifier {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
-        Ok(Self { base: r.read_f32()?, min: r.read_f32()?, max: r.read_f32()? })
+        Ok(Self {
+            base: r.read_f32()?,
+            min: r.read_f32()?,
+            max: r.read_f32()?,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_f32(self.base); w.write_f32(self.min); w.write_f32(self.max);
+        w.write_f32(self.base);
+        w.write_f32(self.min);
+        w.write_f32(self.max);
     }
 }
 
@@ -61,13 +70,17 @@ pub struct ExceptParams {
 impl ExceptParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let exceptions = r.read_list_u32(|r| {
-            Ok(ElementException { id: r.read_u32()?, is_bus_id: r.read_u8()? != 0 })
+            Ok(ElementException {
+                id: r.read_u32()?,
+                is_bus_id: r.read_u8()? != 0,
+            })
         })?;
         Ok(Self { exceptions })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_list_u32(&self.exceptions, |w, e| {
-            w.write_u32(e.id); w.write_u8(e.is_bus_id as u8);
+            w.write_u32(e.id);
+            w.write_u8(e.is_bus_id as u8);
         });
     }
 }
@@ -80,10 +93,14 @@ pub struct PlayActionParams {
 
 impl PlayActionParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
-        Ok(Self { bit_vector: r.read_u8()?, file_id: r.read_u32()? })
+        Ok(Self {
+            bit_vector: r.read_u8()?,
+            file_id: r.read_u32()?,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u8(self.bit_vector); w.write_u32(self.file_id);
+        w.write_u8(self.bit_vector);
+        w.write_u32(self.file_id);
     }
 }
 
@@ -99,7 +116,11 @@ impl ActiveActionParams {
         let bit_vector = r.read_u8()?;
         let action_specific_flags = r.read_u8()?;
         let except_params = ExceptParams::read(r)?;
-        Ok(Self { bit_vector, action_specific_flags, except_params })
+        Ok(Self {
+            bit_vector,
+            action_specific_flags,
+            except_params,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u8(self.bit_vector);
@@ -116,10 +137,14 @@ pub struct StateActionParams {
 
 impl StateActionParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
-        Ok(Self { state_group_id: r.read_u32()?, target_state_id: r.read_u32()? })
+        Ok(Self {
+            state_group_id: r.read_u32()?,
+            target_state_id: r.read_u32()?,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u32(self.state_group_id); w.write_u32(self.target_state_id);
+        w.write_u32(self.state_group_id);
+        w.write_u32(self.target_state_id);
     }
 }
 
@@ -131,10 +156,14 @@ pub struct SwitchActionParams {
 
 impl SwitchActionParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
-        Ok(Self { switch_group_id: r.read_u32()?, switch_state_id: r.read_u32()? })
+        Ok(Self {
+            switch_group_id: r.read_u32()?,
+            switch_state_id: r.read_u32()?,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u32(self.switch_group_id); w.write_u32(self.switch_state_id);
+        w.write_u32(self.switch_group_id);
+        w.write_u32(self.switch_state_id);
     }
 }
 
@@ -162,9 +191,12 @@ impl GameParamActionParams {
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u8(self.bit_vector); w.write_u8(self.bypass_transition);
-        w.write_u8(self.value_meaning); w.write_f32(self.base);
-        w.write_f32(self.min); w.write_f32(self.max);
+        w.write_u8(self.bit_vector);
+        w.write_u8(self.bypass_transition);
+        w.write_u8(self.value_meaning);
+        w.write_f32(self.base);
+        w.write_f32(self.min);
+        w.write_f32(self.max);
         self.except_params.write(w);
     }
 }
@@ -187,8 +219,10 @@ impl ValueActionParams {
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u8(self.bit_vector); w.write_u8(self.value_meaning);
-        self.randomizer.write(w); self.except_params.write(w);
+        w.write_u8(self.bit_vector);
+        w.write_u8(self.value_meaning);
+        self.randomizer.write(w);
+        self.except_params.write(w);
     }
 }
 
@@ -202,12 +236,14 @@ pub struct BypassFXActionParams {
 impl BypassFXActionParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         Ok(Self {
-            is_bypass: r.read_u8()?, target_mask: r.read_u8()?,
+            is_bypass: r.read_u8()?,
+            target_mask: r.read_u8()?,
             except_params: ExceptParams::read(r)?,
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u8(self.is_bypass); w.write_u8(self.target_mask);
+        w.write_u8(self.is_bypass);
+        w.write_u8(self.target_mask);
         self.except_params.write(w);
     }
 }
@@ -230,8 +266,10 @@ impl SeekActionParams {
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
-        w.write_u8(self.is_seek_relative); self.seek_value.write(w);
-        w.write_u8(self.snap_to_nearest_marker); self.except_params.write(w);
+        w.write_u8(self.is_seek_relative);
+        self.seek_value.write(w);
+        w.write_u8(self.snap_to_nearest_marker);
+        self.except_params.write(w);
     }
 }
 
@@ -265,10 +303,11 @@ impl ResumeActionSpecificParams {
     pub const FLAG_APPLY_TO_DYNAMIC_SEQUENCE: u8 = 0x04;
 
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
-        Ok(Self { flags: r.read_u8()? })
+        Ok(Self {
+            flags: r.read_u8()?,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u8(self.flags);
     }
 }
-

@@ -46,8 +46,8 @@ impl BankHeader {
             });
         }
 
-        let raw = RawBankHeader::read_from_bytes(&data[..raw_size])
-            .map_err(|e| Error::ZeroCopyCast {
+        let raw =
+            RawBankHeader::read_from_bytes(&data[..raw_size]).map_err(|e| Error::ZeroCopyCast {
                 offset: 0,
                 reason: format!("{e:?}"),
             })?;
@@ -108,11 +108,12 @@ impl MediaIndex {
 
         for i in 0..count {
             let offset = i * entry_size;
-            let entry = Self::read_from_bytes(&data[offset..offset + entry_size])
-                .map_err(|e| Error::ZeroCopyCast {
+            let entry = Self::read_from_bytes(&data[offset..offset + entry_size]).map_err(|e| {
+                Error::ZeroCopyCast {
                     offset: offset as u64,
                     reason: format!("{e:?}"),
-                })?;
+                }
+            })?;
             entries.push(entry);
         }
 
@@ -126,4 +127,3 @@ pub struct MediaEntry {
     pub id: u32,
     pub data: Vec<u8>,
 }
-

@@ -1,9 +1,9 @@
 //! Property types and bundles.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 /// A single property: ID + raw value bytes.
 #[derive(Debug, Clone)]
@@ -13,11 +13,8 @@ pub struct Prop {
 }
 
 /// Determines byte size of a property value by ID.
-fn prop_value_size(id: u8, is_ranged: bool, _is_modulator: bool) -> usize {
-    let _ = is_ranged;
-    match id {
-        _ => 4,
-    }
+fn prop_value_size(_id: u8, _is_ranged: bool, _is_modulator: bool) -> usize {
+    4
 }
 
 /// A collection of properties, read in two passes (IDs then values).
@@ -52,4 +49,3 @@ impl PropBundle {
         }
     }
 }
-

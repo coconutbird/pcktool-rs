@@ -67,16 +67,16 @@ fn dump_pck(data: &[u8], out_dir: &std::path::Path, filter_id: Option<u32>) -> a
         count += 1;
 
         // Also extract embedded media from each bank
-        if let Ok(bank) = SoundBank::parse(entry.data) {
-            if !bank.media.is_empty() {
-                let media_dir = banks_dir.join(format!("{:08X}_media", entry.id));
-                fs::create_dir_all(&media_dir)?;
-                for (&id, &wem_data) in &bank.media {
-                    let wem_path = media_dir.join(format!("{id:08X}.wem"));
-                    fs::write(&wem_path, wem_data)?;
-                    println!("    → {}", wem_path.display());
-                    count += 1;
-                }
+        if let Ok(bank) = SoundBank::parse(entry.data)
+            && !bank.media.is_empty()
+        {
+            let media_dir = banks_dir.join(format!("{:08X}_media", entry.id));
+            fs::create_dir_all(&media_dir)?;
+            for (&id, &wem_data) in &bank.media {
+                let wem_path = media_dir.join(format!("{id:08X}.wem"));
+                fs::write(&wem_path, wem_data)?;
+                println!("    → {}", wem_path.display());
+                count += 1;
             }
         }
     }
@@ -127,4 +127,3 @@ fn dump_bnk(data: &[u8], out_dir: &std::path::Path, filter_id: Option<u32>) -> a
     println!("\nExtracted {count} WEM files to {}", out_dir.display());
     Ok(())
 }
-

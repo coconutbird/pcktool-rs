@@ -173,7 +173,10 @@ impl<'a> PckFile<'a> {
         if id == 0 {
             return "SFX";
         }
-        self.languages.get(&id).map(|s| s.as_str()).unwrap_or("Unknown")
+        self.languages
+            .get(&id)
+            .map(|s| s.as_str())
+            .unwrap_or("Unknown")
     }
 
     /// Find a WEM by source ID — checks streaming files first, then embedded media in soundbanks.
@@ -186,14 +189,14 @@ impl<'a> PckFile<'a> {
         }
         // Check embedded media in soundbanks
         for bank_entry in &self.sound_banks {
-            if let Ok(bank) = crate::bnk::SoundBank::parse(bank_entry.data) {
-                if let Some(media) = bank.find_media(source_id) {
-                    // media borrows from bank_entry.data which borrows from 'a
-                    // but bank is a local — we need to return data from the original slice
-                    // The media slice is a sub-slice of bank_entry.data, so this is safe
-                    let offset = media.as_ptr() as usize - bank_entry.data.as_ptr() as usize;
-                    return Some(&bank_entry.data[offset..offset + media.len()]);
-                }
+            if let Ok(bank) = crate::bnk::SoundBank::parse(bank_entry.data)
+                && let Some(media) = bank.find_media(source_id)
+            {
+                // media borrows from bank_entry.data which borrows from 'a
+                // but bank is a local — we need to return data from the original slice
+                // The media slice is a sub-slice of bank_entry.data, so this is safe
+                let offset = media.as_ptr() as usize - bank_entry.data.as_ptr() as usize;
+                return Some(&bank_entry.data[offset..offset + media.len()]);
             }
         }
         None
@@ -201,14 +204,12 @@ impl<'a> PckFile<'a> {
 
     // ── Internal LUT parsers ──
 
-    fn parse_lut_32<E: FileEntry<'a, u32>>(
-        lut_data: &[u8],
-        file_data: &'a [u8],
-    ) -> Result<Vec<E>> {
+    fn parse_lut_32<E: FileEntry<'a, u32>>(lut_data: &[u8], file_data: &'a [u8]) -> Result<Vec<E>> {
         if lut_data.len() < 4 {
             return Ok(Vec::new());
         }
-        let count = u32::from_le_bytes([lut_data[0], lut_data[1], lut_data[2], lut_data[3]]) as usize;
+        let count =
+            u32::from_le_bytes([lut_data[0], lut_data[1], lut_data[2], lut_data[3]]) as usize;
         let entry_size = core::mem::size_of::<LutEntry32>();
         let mut entries = Vec::with_capacity(count);
         let mut offset = 4usize;
@@ -220,11 +221,12 @@ impl<'a> PckFile<'a> {
                     reason: format!("LUT truncated at entry {i}"),
                 });
             }
-            let raw = LutEntry32::read_from_bytes(&lut_data[offset..offset + entry_size])
-                .map_err(|e| Error::ZeroCopyCast {
+            let raw = LutEntry32::read_from_bytes(&lut_data[offset..offset + entry_size]).map_err(
+                |e| Error::ZeroCopyCast {
                     offset: offset as u64,
                     reason: format!("{e:?}"),
-                })?;
+                },
+            )?;
 
             let file_size = raw.file_size.get();
             if file_size < 0 {
@@ -259,14 +261,12 @@ impl<'a> PckFile<'a> {
         Ok(entries)
     }
 
-    fn parse_lut_64(
-        lut_data: &[u8],
-        file_data: &'a [u8],
-    ) -> Result<Vec<ExternalFileEntry<'a>>> {
+    fn parse_lut_64(lut_data: &[u8], file_data: &'a [u8]) -> Result<Vec<ExternalFileEntry<'a>>> {
         if lut_data.len() < 4 {
             return Ok(Vec::new());
         }
-        let count = u32::from_le_bytes([lut_data[0], lut_data[1], lut_data[2], lut_data[3]]) as usize;
+        let count =
+            u32::from_le_bytes([lut_data[0], lut_data[1], lut_data[2], lut_data[3]]) as usize;
         let entry_size = core::mem::size_of::<LutEntry64>();
         let mut entries = Vec::with_capacity(count);
         let mut offset = 4usize;
@@ -278,11 +278,12 @@ impl<'a> PckFile<'a> {
                     reason: format!("LUT truncated at entry {i}"),
                 });
             }
-            let raw = LutEntry64::read_from_bytes(&lut_data[offset..offset + entry_size])
-                .map_err(|e| Error::ZeroCopyCast {
+            let raw = LutEntry64::read_from_bytes(&lut_data[offset..offset + entry_size]).map_err(
+                |e| Error::ZeroCopyCast {
                     offset: offset as u64,
                     reason: format!("{e:?}"),
-                })?;
+                },
+            )?;
 
             let file_size = raw.file_size.get();
             if file_size < 0 {
@@ -317,4 +318,3 @@ impl<'a> PckFile<'a> {
         Ok(entries)
     }
 }
-

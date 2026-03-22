@@ -1,9 +1,9 @@
 //! Media source types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone)]
 pub struct MediaInformation {
@@ -25,8 +25,12 @@ impl MediaInformation {
         w.write_u32(self.in_memory_media_size);
         w.write_u8(self.source_bits);
     }
-    pub fn is_language_specific(&self) -> bool { (self.source_bits & 0x01) != 0 }
-    pub fn has_source(&self) -> bool { (self.source_bits & 0x80) != 0 }
+    pub fn is_language_specific(&self) -> bool {
+        (self.source_bits & 0x01) != 0
+    }
+    pub fn has_source(&self) -> bool {
+        (self.source_bits & 0x80) != 0
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -44,18 +48,25 @@ impl BankSourceData {
         let stream_type = r.read_u8()?;
         let media_info = MediaInformation::read(r)?;
         let plugin_type_value = plugin_id & 0x000F;
-        let (plugin_params_size, plugin_params) = if plugin_type_value == 2 || plugin_type_value == 5 {
-            let size = r.read_u32()?;
-            let params = if size > 0 {
-                Some(r.read_bytes(size as usize)?.to_vec())
+        let (plugin_params_size, plugin_params) =
+            if plugin_type_value == 2 || plugin_type_value == 5 {
+                let size = r.read_u32()?;
+                let params = if size > 0 {
+                    Some(r.read_bytes(size as usize)?.to_vec())
+                } else {
+                    None
+                };
+                (Some(size), params)
             } else {
-                None
+                (None, None)
             };
-            (Some(size), params)
-        } else {
-            (None, None)
-        };
-        Ok(Self { plugin_id, stream_type, media_info, plugin_params_size, plugin_params })
+        Ok(Self {
+            plugin_id,
+            stream_type,
+            media_info,
+            plugin_params_size,
+            plugin_params,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u32(self.plugin_id);
@@ -71,4 +82,3 @@ impl BankSourceData {
         }
     }
 }
-

@@ -1,10 +1,10 @@
 //! Action item values.
 
-use crate::error::Result;
 use super::super::params::*;
 use super::super::reader::BinaryReader;
+use super::super::types::{ActionCategory, ActionType};
 use super::super::writer::BinaryWriter;
-use super::super::types::{ActionType, ActionCategory};
+use crate::error::Result;
 
 #[derive(Debug, Clone)]
 pub struct ActionValues {
@@ -33,10 +33,19 @@ impl ActionValues {
 
         let cat = action_type.category();
         let mut v = ActionValues {
-            action_type, ext, ext4, prop_bundle1, prop_bundle2,
-            play_params: None, active_params: None, state_params: None,
-            switch_params: None, game_param_params: None, value_params: None,
-            bypass_fx_params: None, seek_params: None,
+            action_type,
+            ext,
+            ext4,
+            prop_bundle1,
+            prop_bundle2,
+            play_params: None,
+            active_params: None,
+            state_params: None,
+            switch_params: None,
+            game_param_params: None,
+            value_params: None,
+            bypass_fx_params: None,
+            seek_params: None,
         };
 
         match cat {
@@ -44,7 +53,9 @@ impl ActionValues {
             ActionCategory::Active => v.active_params = Some(ActiveActionParams::read(r)?),
             ActionCategory::State => v.state_params = Some(StateActionParams::read(r)?),
             ActionCategory::Switch => v.switch_params = Some(SwitchActionParams::read(r)?),
-            ActionCategory::GameParam => v.game_param_params = Some(GameParamActionParams::read(r)?),
+            ActionCategory::GameParam => {
+                v.game_param_params = Some(GameParamActionParams::read(r)?)
+            }
             ActionCategory::Value => v.value_params = Some(ValueActionParams::read(r)?),
             ActionCategory::BypassFX => v.bypass_fx_params = Some(BypassFXActionParams::read(r)?),
             ActionCategory::Seek => v.seek_params = Some(SeekActionParams::read(r)?),
@@ -62,16 +73,47 @@ impl ActionValues {
 
         let cat = self.action_type.category();
         match cat {
-            ActionCategory::Play => { if let Some(p) = &self.play_params { p.write(w); } }
-            ActionCategory::Active => { if let Some(p) = &self.active_params { p.write(w); } }
-            ActionCategory::State => { if let Some(p) = &self.state_params { p.write(w); } }
-            ActionCategory::Switch => { if let Some(p) = &self.switch_params { p.write(w); } }
-            ActionCategory::GameParam => { if let Some(p) = &self.game_param_params { p.write(w); } }
-            ActionCategory::Value => { if let Some(p) = &self.value_params { p.write(w); } }
-            ActionCategory::BypassFX => { if let Some(p) = &self.bypass_fx_params { p.write(w); } }
-            ActionCategory::Seek => { if let Some(p) = &self.seek_params { p.write(w); } }
+            ActionCategory::Play => {
+                if let Some(p) = &self.play_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::Active => {
+                if let Some(p) = &self.active_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::State => {
+                if let Some(p) = &self.state_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::Switch => {
+                if let Some(p) = &self.switch_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::GameParam => {
+                if let Some(p) = &self.game_param_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::Value => {
+                if let Some(p) = &self.value_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::BypassFX => {
+                if let Some(p) = &self.bypass_fx_params {
+                    p.write(w);
+                }
+            }
+            ActionCategory::Seek => {
+                if let Some(p) = &self.seek_params {
+                    p.write(w);
+                }
+            }
             _ => {}
         }
     }
 }
-

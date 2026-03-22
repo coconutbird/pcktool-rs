@@ -2,10 +2,10 @@
 
 use alloc::vec::Vec;
 
-use crate::error::Result;
 use super::super::params::*;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
 
 // ─── Sound ──────────────────────────────────────────────────────────
 
@@ -65,4 +65,3 @@ impl ActorMixerValues {
         self.children.write(w);
     }
 }
-

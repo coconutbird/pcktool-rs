@@ -1,11 +1,11 @@
 //! Bus parameter types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
-use super::props::PropBundle;
 use super::node::FxChunk;
+use super::props::PropBundle;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone)]
 pub struct BusInitialParams {
@@ -52,23 +52,31 @@ impl BusInitialFxParams {
         let (bits_fx_bypass, fx_chunks) = if num_fx > 0 {
             let bits = r.read_u8()?;
             let mut chunks = Vec::with_capacity(num_fx as usize);
-            for _ in 0..num_fx { chunks.push(FxChunk::read(r)?); }
+            for _ in 0..num_fx {
+                chunks.push(FxChunk::read(r)?);
+            }
             (Some(bits), chunks)
         } else {
             (None, Vec::new())
         };
         let fx_id_0 = r.read_u32()?;
         let is_share_set_0 = r.read_u8()?;
-        Ok(Self { bits_fx_bypass, fx_chunks, fx_id_0, is_share_set_0 })
+        Ok(Self {
+            bits_fx_bypass,
+            fx_chunks,
+            fx_id_0,
+            is_share_set_0,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u8(self.fx_chunks.len() as u8);
         if let Some(bits) = self.bits_fx_bypass {
             w.write_u8(bits);
-            for c in &self.fx_chunks { c.write(w); }
+            for c in &self.fx_chunks {
+                c.write(w);
+            }
         }
         w.write_u32(self.fx_id_0);
         w.write_u8(self.is_share_set_0);
     }
 }
-

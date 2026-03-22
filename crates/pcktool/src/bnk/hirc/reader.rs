@@ -1,8 +1,7 @@
 //! Cursor-based binary reader for `no_std` HIRC parsing.
 
 use crate::error::{Error, Result};
-use alloc::format;
-use alloc::string::String;
+use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 /// A cursor over a byte slice for sequential binary reads.
@@ -125,12 +124,11 @@ impl<'a> BinaryReader<'a> {
         let bytes = self.read_bytes(byte_len)?;
         // Strip trailing null(s)
         let end = bytes.iter().position(|&b| b == 0).unwrap_or(byte_len);
-        String::from_utf8(bytes[..end].to_vec())
-            .map_err(|_| Error::InvalidChunk {
-                tag: format!("HIRC"),
-                offset: (self.pos - byte_len) as u64,
-                reason: format!("invalid UTF-8 string"),
-            })
+        String::from_utf8(bytes[..end].to_vec()).map_err(|_| Error::InvalidChunk {
+            tag: "HIRC".to_string(),
+            offset: (self.pos - byte_len) as u64,
+            reason: "invalid UTF-8 string".to_string(),
+        })
     }
 
     /// Read a list with a `u32` count prefix.
@@ -159,4 +157,3 @@ impl<'a> BinaryReader<'a> {
         Ok(items)
     }
 }
-

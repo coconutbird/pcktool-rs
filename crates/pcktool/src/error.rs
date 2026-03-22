@@ -46,10 +46,17 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::InvalidMagic { expected, actual } => {
-                write!(f, "invalid magic: expected 0x{expected:08X}, got 0x{actual:08X}")
+                write!(
+                    f,
+                    "invalid magic: expected 0x{expected:08X}, got 0x{actual:08X}"
+                )
             }
             Self::UnsupportedVersion(v) => write!(f, "unsupported version: 0x{v:X}"),
-            Self::UnexpectedEof { offset, needed, available } => {
+            Self::UnexpectedEof {
+                offset,
+                needed,
+                available,
+            } => {
                 write!(
                     f,
                     "unexpected end of data at offset 0x{offset:X} (need {needed} bytes, have {available})"
@@ -58,7 +65,11 @@ impl fmt::Display for Error {
             Self::InvalidEntry { index, reason } => {
                 write!(f, "invalid entry at index {index}: {reason}")
             }
-            Self::InvalidChunk { tag, offset, reason } => {
+            Self::InvalidChunk {
+                tag,
+                offset,
+                reason,
+            } => {
                 write!(f, "invalid chunk '{tag}' at offset 0x{offset:X}: {reason}")
             }
             Self::WemNotFound(id) => write!(f, "WEM source ID 0x{id:08X} not found"),
@@ -69,6 +80,5 @@ impl fmt::Display for Error {
         }
     }
 }
-
 
 impl core::error::Error for Error {}

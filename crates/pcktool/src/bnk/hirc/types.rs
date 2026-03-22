@@ -118,7 +118,10 @@ impl ActionType {
         if self == Self::PLAY_EVENT {
             return ActionCategory::PlayEvent;
         }
-        if matches!(self, Self { 0: 0x0403 } | Self { 0: 0x0503 } | Self { 0: 0x2303 }) {
+        if matches!(
+            self,
+            Self { 0: 0x0403 } | Self { 0: 0x0503 } | Self { 0: 0x2303 }
+        ) {
             return ActionCategory::Play;
         }
         if self.is_active() {
@@ -167,7 +170,8 @@ impl ActionType {
         matches!(self.0, 0x1302 | 0x1303 | 0x1402 | 0x1403)
     }
     fn is_value(self) -> bool {
-        matches!(self.0,
+        matches!(
+            self.0,
             // Mute/Unmute
             0x0602 | 0x0603 | 0x0702 | 0x0703 | 0x0704 | 0x0705 | 0x0708 | 0x0709 |
             // SetVolume/ResetVolume
@@ -183,15 +187,37 @@ impl ActionType {
         )
     }
     fn is_bypass_fx(self) -> bool {
-        matches!(self.0,
-            0x1A02 | 0x1A03 | 0x1B02 | 0x1B03 | 0x1B04 | 0x1B05 | 0x1B08 | 0x1B09 |
-            0x3302 | 0x3303 | 0x3402 | 0x3403 | 0x3404 | 0x3405 |
-            0x3502 | 0x3503 | 0x3602 | 0x3603 | 0x3604 | 0x3605 |
-            0x3702 | 0x3703 | 0x3704 | 0x3705
+        matches!(
+            self.0,
+            0x1A02
+                | 0x1A03
+                | 0x1B02
+                | 0x1B03
+                | 0x1B04
+                | 0x1B05
+                | 0x1B08
+                | 0x1B09
+                | 0x3302
+                | 0x3303
+                | 0x3402
+                | 0x3403
+                | 0x3404
+                | 0x3405
+                | 0x3502
+                | 0x3503
+                | 0x3602
+                | 0x3603
+                | 0x3604
+                | 0x3605
+                | 0x3702
+                | 0x3703
+                | 0x3704
+                | 0x3705
         )
     }
     fn is_none_params(self) -> bool {
-        matches!(self.0,
+        matches!(
+            self.0,
             0x1002 | 0x1102 | // UseState/UnuseState
             0x1C02 | 0x1C03 | // Break
             0x1D00 | 0x1D01 | 0x1D02 | 0x1D03 | 0x1B00 | 0x1B01 | // Trigger
@@ -200,7 +226,7 @@ impl ActionType {
             0x2202 | 0x2203 | // ResetPlaylist
             0x3102 | 0x3202 | 0x3204 | // SetFX
             0x1511 | 0x1611 | 0x1711 | // StopEvent/PauseEvent/ResumeEvent
-            0x4000 | 0x0000   // NoOp/None
+            0x4000 | 0x0000 // NoOp/None
         )
     }
 }
@@ -221,4 +247,3 @@ pub enum ActionCategory {
     Event,
     Unknown,
 }
-

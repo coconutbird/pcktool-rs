@@ -1,6 +1,6 @@
 use clap::Args;
-use pcktool::pck::PckFile;
 use pcktool::bnk::SoundBank;
+use pcktool::pck::PckFile;
 
 use super::mmap_file;
 
@@ -73,4 +73,3 @@ fn info_bnk(data: &[u8]) -> anyhow::Result<()> {
 
     Ok(())
 }
-

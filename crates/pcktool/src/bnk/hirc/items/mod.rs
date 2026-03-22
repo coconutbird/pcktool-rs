@@ -1,27 +1,27 @@
 //! HIRC item types — one variant per Wwise object kind.
 
-pub mod sound;
 pub mod action;
-pub mod containers;
 pub mod bus;
+pub mod containers;
 pub mod fx;
 pub mod misc;
 pub mod music;
+pub mod sound;
 
-pub use sound::*;
 pub use action::*;
-pub use containers::*;
 pub use bus::*;
+pub use containers::*;
 pub use fx::*;
 pub use misc::*;
 pub use music::*;
+pub use sound::*;
 
 use alloc::vec::Vec;
 
-use crate::error::Result;
 use super::reader::BinaryReader;
-use super::writer::BinaryWriter;
 use super::types::HircType;
+use super::writer::BinaryWriter;
+use crate::error::Result;
 
 // ─── HircItem ───────────────────────────────────────────────────────
 
@@ -75,24 +75,45 @@ impl HircItem {
             Some(HircType::Sound) => HircBody::Sound(SoundValues::read(r, has_feedback)?),
             Some(HircType::Action) => HircBody::Action(ActionValues::read(r)?),
             Some(HircType::Event) => HircBody::Event(EventValues::read(r)?),
-            Some(HircType::RanSeqCntr) => HircBody::RanSeqCntr(RanSeqCntrValues::read(r, has_feedback)?),
-            Some(HircType::SwitchCntr) => HircBody::SwitchCntr(SwitchCntrValues::read(r, has_feedback)?),
-            Some(HircType::ActorMixer) => HircBody::ActorMixer(ActorMixerValues::read(r, has_feedback)?),
-            Some(HircType::Bus) | Some(HircType::FeedbackBus) | Some(HircType::AuxBus) =>
-                HircBody::Bus(BusValues::read(r, has_feedback)?),
-            Some(HircType::LayerCntr) => HircBody::LayerCntr(LayerCntrValues::read(r, has_feedback)?),
+            Some(HircType::RanSeqCntr) => {
+                HircBody::RanSeqCntr(RanSeqCntrValues::read(r, has_feedback)?)
+            }
+            Some(HircType::SwitchCntr) => {
+                HircBody::SwitchCntr(SwitchCntrValues::read(r, has_feedback)?)
+            }
+            Some(HircType::ActorMixer) => {
+                HircBody::ActorMixer(ActorMixerValues::read(r, has_feedback)?)
+            }
+            Some(HircType::Bus) | Some(HircType::FeedbackBus) | Some(HircType::AuxBus) => {
+                HircBody::Bus(BusValues::read(r, has_feedback)?)
+            }
+            Some(HircType::LayerCntr) => {
+                HircBody::LayerCntr(LayerCntrValues::read(r, has_feedback)?)
+            }
             Some(HircType::State) => HircBody::State(StateValues::read(r)?),
             Some(HircType::Attenuation) => HircBody::Attenuation(AttenuationValues::read(r)?),
             Some(HircType::DialogueEvent) => HircBody::DialogueEvent(DialogueEventValues::read(r)?),
-            Some(HircType::FxShareSet) | Some(HircType::FxCustom) | Some(HircType::AudioDevice) =>
-                HircBody::Fx(FxBaseValues::read(r)?),
-            Some(HircType::MusicSegment) => HircBody::MusicSegment(MusicSegmentValues::read(r, has_feedback)?),
-            Some(HircType::MusicTrack) => HircBody::MusicTrack(MusicTrackValues::read(r, has_feedback)?),
-            Some(HircType::MusicSwitch) => HircBody::MusicSwitch(MusicSwitchValues::read(r, has_feedback)?),
-            Some(HircType::MusicRanSeq) => HircBody::MusicRanSeq(MusicRanSeqValues::read(r, has_feedback)?),
-            Some(HircType::FeedbackNode) => HircBody::FeedbackNode(FeedbackNodeValues::read(r, has_feedback)?),
-            Some(HircType::LfoModulator) | Some(HircType::EnvelopeModulator) =>
-                HircBody::Modulator(ModulatorValues::read(r)?),
+            Some(HircType::FxShareSet) | Some(HircType::FxCustom) | Some(HircType::AudioDevice) => {
+                HircBody::Fx(FxBaseValues::read(r)?)
+            }
+            Some(HircType::MusicSegment) => {
+                HircBody::MusicSegment(MusicSegmentValues::read(r, has_feedback)?)
+            }
+            Some(HircType::MusicTrack) => {
+                HircBody::MusicTrack(MusicTrackValues::read(r, has_feedback)?)
+            }
+            Some(HircType::MusicSwitch) => {
+                HircBody::MusicSwitch(MusicSwitchValues::read(r, has_feedback)?)
+            }
+            Some(HircType::MusicRanSeq) => {
+                HircBody::MusicRanSeq(MusicRanSeqValues::read(r, has_feedback)?)
+            }
+            Some(HircType::FeedbackNode) => {
+                HircBody::FeedbackNode(FeedbackNodeValues::read(r, has_feedback)?)
+            }
+            Some(HircType::LfoModulator) | Some(HircType::EnvelopeModulator) => {
+                HircBody::Modulator(ModulatorValues::read(r)?)
+            }
             _ => {
                 let data = r.read_bytes(remaining)?.to_vec();
                 HircBody::Unknown(data)
@@ -108,7 +129,11 @@ impl HircItem {
             let _ = r.read_bytes(skip);
         }
 
-        Ok(HircItem { hirc_type, id, body })
+        Ok(HircItem {
+            hirc_type,
+            id,
+            body,
+        })
     }
 
     /// Write this HIRC item (type + size + id + body).
@@ -147,4 +172,3 @@ impl HircItem {
         w.patch_u32(size_pos, size);
     }
 }
-

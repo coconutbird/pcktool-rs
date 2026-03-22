@@ -8,6 +8,12 @@ pub struct BinaryWriter {
     buf: Vec<u8>,
 }
 
+impl Default for BinaryWriter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BinaryWriter {
     /// Create a new writer.
     pub fn new() -> Self {
@@ -16,7 +22,9 @@ impl BinaryWriter {
 
     /// Create a new writer with pre-allocated capacity.
     pub fn with_capacity(cap: usize) -> Self {
-        Self { buf: Vec::with_capacity(cap) }
+        Self {
+            buf: Vec::with_capacity(cap),
+        }
     }
 
     /// Current write position (length of buffer so far).
@@ -114,4 +122,3 @@ impl BinaryWriter {
         self.buf[offset..offset + 4].copy_from_slice(&bytes);
     }
 }
-

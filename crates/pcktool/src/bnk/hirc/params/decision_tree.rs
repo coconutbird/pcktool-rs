@@ -1,9 +1,9 @@
 //! Decision tree types for DialogueEvent and MusicSwitch.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 /// A node in a decision tree (AkDecisionTree).
 #[derive(Debug, Clone)]
@@ -47,20 +47,32 @@ impl DecisionTree {
         let mut root_nodes = Vec::new();
 
         if count_max == 0 {
-            return Ok(Self { mode: 0, root_nodes, raw_tree_data: None });
+            return Ok(Self {
+                mode: 0,
+                root_nodes,
+                raw_tree_data: None,
+            });
         }
 
         let start_pos = r.position();
         match Self::parse_nodes(r, 1, count_max, 0, depth) {
             Ok(nodes) => {
                 root_nodes = nodes;
-                Ok(Self { mode: 0, root_nodes, raw_tree_data: None })
+                Ok(Self {
+                    mode: 0,
+                    root_nodes,
+                    raw_tree_data: None,
+                })
             }
             Err(_) => {
                 let consumed = r.position() - start_pos;
                 let remaining = tree_data_size as usize - consumed;
                 let raw = r.read_bytes(remaining)?.to_vec();
-                Ok(Self { mode: 0, root_nodes: Vec::new(), raw_tree_data: Some(raw) })
+                Ok(Self {
+                    mode: 0,
+                    root_nodes: Vec::new(),
+                    raw_tree_data: Some(raw),
+                })
             }
         }
     }
@@ -79,24 +91,33 @@ impl DecisionTree {
             let next_val = r.read_u32()?;
             let uidx = (next_val & 0xFFFF) as u16;
             let ucnt = ((next_val >> 16) & 0xFFFF) as u16;
-            let is_audio = uidx as u32 > count_max
-                || ucnt as u32 > count_max
-                || cur_depth == max_depth;
+            let is_audio =
+                uidx as u32 > count_max || ucnt as u32 > count_max || cur_depth == max_depth;
 
             let weight = r.read_u16()?;
             let probability = r.read_u16()?;
 
             let node = if is_audio {
                 DecisionTreeNode {
-                    key, is_audio_node: true, audio_node_id: next_val,
-                    children_idx: 0, children_count: 0,
-                    weight, probability, children: Vec::new(),
+                    key,
+                    is_audio_node: true,
+                    audio_node_id: next_val,
+                    children_idx: 0,
+                    children_count: 0,
+                    weight,
+                    probability,
+                    children: Vec::new(),
                 }
             } else {
                 DecisionTreeNode {
-                    key, is_audio_node: false, audio_node_id: 0,
-                    children_idx: uidx, children_count: ucnt,
-                    weight, probability, children: Vec::new(),
+                    key,
+                    is_audio_node: false,
+                    audio_node_id: 0,
+                    children_idx: uidx,
+                    children_count: ucnt,
+                    weight,
+                    probability,
+                    children: Vec::new(),
                 }
             };
             let child_count = if is_audio { 0 } else { ucnt };
@@ -106,9 +127,8 @@ impl DecisionTree {
         let mut nodes = Vec::with_capacity(node_infos.len());
         for (mut node, child_count) in node_infos {
             if child_count > 0 {
-                node.children = Self::parse_nodes(
-                    r, child_count as u32, count_max, cur_depth + 1, max_depth,
-                )?;
+                node.children =
+                    Self::parse_nodes(r, child_count as u32, count_max, cur_depth + 1, max_depth)?;
             }
             nodes.push(node);
         }
@@ -146,4 +166,3 @@ impl DecisionTree {
         }
     }
 }
-

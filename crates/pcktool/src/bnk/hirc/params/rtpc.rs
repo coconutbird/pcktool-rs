@@ -1,9 +1,9 @@
 //! RTPC (Real-Time Parameter Control) types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 /// A point on an RTPC graph curve.
 #[derive(Debug, Clone, Copy)]
@@ -48,7 +48,15 @@ impl RtpcManager {
         let rtpc_curve_id = r.read_u32()?;
         let scaling = r.read_u8()?;
         let graph_points = r.read_list_u16(RtpcGraphPoint::read)?;
-        Ok(Self { rtpc_id, rtpc_type, rtpc_accum, param_id, rtpc_curve_id, scaling, graph_points })
+        Ok(Self {
+            rtpc_id,
+            rtpc_type,
+            rtpc_accum,
+            param_id,
+            rtpc_curve_id,
+            scaling,
+            graph_points,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u32(self.rtpc_id);
@@ -69,7 +77,9 @@ pub struct InitialRtpc {
 impl InitialRtpc {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let managers = r.read_list_u16(RtpcManager::read)?;
-        Ok(Self { rtpc_managers: managers })
+        Ok(Self {
+            rtpc_managers: managers,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_list_u16(&self.rtpc_managers, |w, m| m.write(w));
@@ -93,4 +103,3 @@ impl ConversionTable {
         w.write_list_u16(&self.points, |w, p| p.write(w));
     }
 }
-

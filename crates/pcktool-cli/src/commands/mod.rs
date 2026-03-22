@@ -9,7 +9,8 @@ pub fn parse_id(s: &str) -> Result<u32, String> {
     if let Some(hex) = s.strip_prefix("0x").or_else(|| s.strip_prefix("0X")) {
         u32::from_str_radix(hex, 16).map_err(|e| format!("invalid hex ID '{s}': {e}"))
     } else {
-        s.parse::<u32>().map_err(|e| format!("invalid ID '{s}': {e}"))
+        s.parse::<u32>()
+            .map_err(|e| format!("invalid ID '{s}': {e}"))
     }
 }
 
@@ -40,4 +41,3 @@ pub fn run(cmd: Command) -> anyhow::Result<()> {
         Command::Dump(args) => dump::run(args),
     }
 }
-

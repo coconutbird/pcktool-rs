@@ -35,8 +35,18 @@ impl StringMap {
             if cursor + 8 > data.len() {
                 break;
             }
-            let offset = u32::from_le_bytes([data[cursor], data[cursor + 1], data[cursor + 2], data[cursor + 3]]);
-            let id = u32::from_le_bytes([data[cursor + 4], data[cursor + 5], data[cursor + 6], data[cursor + 7]]);
+            let offset = u32::from_le_bytes([
+                data[cursor],
+                data[cursor + 1],
+                data[cursor + 2],
+                data[cursor + 3],
+            ]);
+            let id = u32::from_le_bytes([
+                data[cursor + 4],
+                data[cursor + 5],
+                data[cursor + 6],
+                data[cursor + 7],
+            ]);
             pairs.push((offset, id));
             cursor += 8;
         }
@@ -98,9 +108,7 @@ impl StringMap {
 
         // Pad to 4-byte alignment
         let padding = (4 - buf.len() % 4) % 4;
-        for _ in 0..padding {
-            buf.push(0);
-        }
+        buf.extend(core::iter::repeat_n(0u8, padding));
 
         buf
     }
@@ -120,4 +128,3 @@ fn read_wstring(data: &[u8]) -> String {
     }
     String::from_utf16_lossy(&chars)
 }
-

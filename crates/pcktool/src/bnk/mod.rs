@@ -20,7 +20,7 @@
 mod chunks;
 pub mod hirc;
 
-pub use chunks::{BankHeader, MediaIndex, MediaEntry};
+pub use chunks::{BankHeader, MediaEntry, MediaIndex};
 
 use alloc::format;
 use alloc::vec::Vec;
@@ -90,11 +90,12 @@ impl<'a> SoundBank<'a> {
         let mut cursor = 0usize;
 
         while cursor + chunk_hdr_size <= data.len() {
-            let ch = ChunkHeader::read_from_bytes(&data[cursor..cursor + chunk_hdr_size])
-                .map_err(|e| Error::ZeroCopyCast {
+            let ch = ChunkHeader::read_from_bytes(&data[cursor..cursor + chunk_hdr_size]).map_err(
+                |e| Error::ZeroCopyCast {
                     offset: cursor as u64,
                     reason: format!("{e:?}"),
-                })?;
+                },
+            )?;
 
             let tag = ch.tag.get();
             let size = ch.size.get() as usize;
@@ -110,7 +111,10 @@ impl<'a> SoundBank<'a> {
             }
 
             let chunk_data = &data[chunk_start..chunk_end];
-            chunks.push(Chunk { tag, data: chunk_data });
+            chunks.push(Chunk {
+                tag,
+                data: chunk_data,
+            });
 
             match tag {
                 BKHD => {
@@ -290,4 +294,3 @@ impl SoundBankOwned {
         data
     }
 }
-

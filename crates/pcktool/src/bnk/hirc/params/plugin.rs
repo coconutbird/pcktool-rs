@@ -1,9 +1,9 @@
 //! Plugin types and parameters.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 /// Known Wwise plugin IDs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -84,4 +84,3 @@ impl DelayFxParams {
         w.write_u8(self.non_rtpc_process_lfe);
     }
 }
-

@@ -3,11 +3,11 @@
 use alloc::string::String;
 use alloc::vec::Vec;
 
-use crate::error::Result;
 use super::super::params::*;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
 use super::fx::GameSyncArgument;
+use crate::error::Result;
 
 // ─── MusicSegment ───────────────────────────────────────────────────
 
@@ -26,7 +26,9 @@ impl MusicMarker {
         let name = if string_size > 0 {
             let s = r.read_string(string_size)?;
             Some(s)
-        } else { None };
+        } else {
+            None
+        };
         Ok(Self { id, position, name })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
@@ -55,7 +57,11 @@ impl MusicSegmentValues {
         let music_node_params = MusicNodeParams::read(r, has_feedback)?;
         let duration = r.read_f64()?;
         let markers = r.read_list_u32(MusicMarker::read)?;
-        Ok(Self { music_node_params, duration, markers })
+        Ok(Self {
+            music_node_params,
+            duration,
+            markers,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.music_node_params.write(w);
@@ -85,38 +91,66 @@ impl MusicTrackValues {
         let overrides = r.read_u8()?;
         let num_sources = r.read_u32()? as usize;
         let mut sources = Vec::with_capacity(num_sources);
-        for _ in 0..num_sources { sources.push(BankSourceData::read(r)?); }
+        for _ in 0..num_sources {
+            sources.push(BankSourceData::read(r)?);
+        }
         let num_playlist = r.read_u32()? as usize;
         let mut playlist = Vec::with_capacity(num_playlist);
         let mut num_sub_track = 0u32;
         if num_playlist > 0 {
-            for _ in 0..num_playlist { playlist.push(TrackSrcInfo::read(r)?); }
+            for _ in 0..num_playlist {
+                playlist.push(TrackSrcInfo::read(r)?);
+            }
             num_sub_track = r.read_u32()?;
         }
         let clip_automation_items = r.read_list_u32(ClipAutomation::read)?;
         let node_base_params = NodeBaseParams::read(r, has_feedback)?;
         let track_type = r.read_u8()?;
         let (switch_params, trans_params) = if track_type == 0x3 {
-            (Some(TrackSwitchParams::read(r)?), Some(TrackTransParams::read(r)?))
-        } else { (None, None) };
+            (
+                Some(TrackSwitchParams::read(r)?),
+                Some(TrackTransParams::read(r)?),
+            )
+        } else {
+            (None, None)
+        };
         let look_ahead_time = r.read_i32()?;
-        Ok(Self { overrides, sources, playlist, num_sub_track, clip_automation_items, node_base_params, track_type, switch_params, trans_params, look_ahead_time })
+        Ok(Self {
+            overrides,
+            sources,
+            playlist,
+            num_sub_track,
+            clip_automation_items,
+            node_base_params,
+            track_type,
+            switch_params,
+            trans_params,
+            look_ahead_time,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u8(self.overrides);
         w.write_u32(self.sources.len() as u32);
-        for s in &self.sources { s.write(w); }
+        for s in &self.sources {
+            s.write(w);
+        }
         w.write_u32(self.playlist.len() as u32);
         if !self.playlist.is_empty() {
-            for p in &self.playlist { p.write(w); }
+            for p in &self.playlist {
+                p.write(w);
+            }
             w.write_u32(self.num_sub_track);
         }
         w.write_list_u32(&self.clip_automation_items, |w, c| c.write(w));
         self.node_base_params.write(w);
         w.write_u8(self.track_type);
         if self.track_type == 0x3 {
-            if let Some(sp) = &self.switch_params { sp.write(w); }
-            if let Some(tp) = &self.trans_params { tp.write(w); }
+            if let Some(sp) = &self.switch_params {
+                sp.write(w);
+            }
+            if let Some(tp) = &self.trans_params {
+                tp.write(w);
+            }
         }
         w.write_i32(self.look_ahead_time);
     }
@@ -142,22 +176,43 @@ impl MusicSwitchValues {
         let tree_depth = r.read_u32()?;
         let mut group_ids = Vec::with_capacity(tree_depth as usize);
         let mut group_types = Vec::with_capacity(tree_depth as usize);
-        for _ in 0..tree_depth { group_ids.push(r.read_u32()?); }
-        for _ in 0..tree_depth { group_types.push(r.read_u8()?); }
-        let arguments: Vec<GameSyncArgument> = group_ids.into_iter().zip(group_types)
-            .map(|(id, ty)| GameSyncArgument { group_id: id, group_type: ty })
+        for _ in 0..tree_depth {
+            group_ids.push(r.read_u32()?);
+        }
+        for _ in 0..tree_depth {
+            group_types.push(r.read_u8()?);
+        }
+        let arguments: Vec<GameSyncArgument> = group_ids
+            .into_iter()
+            .zip(group_types)
+            .map(|(id, ty)| GameSyncArgument {
+                group_id: id,
+                group_type: ty,
+            })
             .collect();
         let tree_data_size = r.read_u32()?;
         let tree_mode = r.read_u8()?;
         let decision_tree = DecisionTree::read(r, tree_depth, tree_data_size)?;
-        Ok(Self { music_trans_node_params, is_continue_playback, tree_depth, arguments, tree_data_size, tree_mode, decision_tree })
+        Ok(Self {
+            music_trans_node_params,
+            is_continue_playback,
+            tree_depth,
+            arguments,
+            tree_data_size,
+            tree_mode,
+            decision_tree,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.music_trans_node_params.write(w);
         w.write_u8(self.is_continue_playback);
         w.write_u32(self.tree_depth);
-        for a in &self.arguments { w.write_u32(a.group_id); }
-        for a in &self.arguments { w.write_u8(a.group_type); }
+        for a in &self.arguments {
+            w.write_u32(a.group_id);
+        }
+        for a in &self.arguments {
+            w.write_u8(a.group_type);
+        }
         w.write_u32(self.tree_data_size);
         w.write_u8(self.tree_mode);
         self.decision_tree.write(w, self.tree_depth);
@@ -199,11 +254,22 @@ impl MusicRanSeqPlaylistItem {
             let is_shuffle = r.read_u8()?;
             let children = if num_children > 0 {
                 Self::read_recursive(r, num_children)?
-            } else { Vec::new() };
+            } else {
+                Vec::new()
+            };
             items.push(Self {
-                segment_id, playlist_item_id, num_children, rs_type,
-                loop_val, loop_min, loop_max, weight, avoid_repeat_count,
-                is_using_weight, is_shuffle, children,
+                segment_id,
+                playlist_item_id,
+                num_children,
+                rs_type,
+                loop_val,
+                loop_min,
+                loop_max,
+                weight,
+                avoid_repeat_count,
+                is_using_weight,
+                is_shuffle,
+                children,
             });
         }
         Ok(items)
@@ -240,7 +306,11 @@ impl MusicRanSeqValues {
         let music_trans_node_params = MusicTransNodeParams::read(r, has_feedback)?;
         let num_playlist_items = r.read_u32()?;
         let playlist = MusicRanSeqPlaylistItem::read_recursive(r, 1)?;
-        Ok(Self { music_trans_node_params, num_playlist_items, playlist })
+        Ok(Self {
+            music_trans_node_params,
+            num_playlist_items,
+            playlist,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.music_trans_node_params.write(w);
@@ -248,4 +318,3 @@ impl MusicRanSeqValues {
         MusicRanSeqPlaylistItem::write_recursive(&self.playlist, w);
     }
 }
-

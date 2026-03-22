@@ -1,12 +1,12 @@
 //! Node base parameter types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
-use super::props::{PropBundle};
+use super::props::PropBundle;
 use super::rtpc::InitialRtpc;
 use super::state::StateChunk;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone, Default)]
 pub struct Children {
@@ -70,7 +70,11 @@ impl NodeInitialFxParams {
         } else {
             (false, Vec::new())
         };
-        Ok(Self { is_override_parent_fx, fx_bypass, fx_chunks })
+        Ok(Self {
+            is_override_parent_fx,
+            fx_bypass,
+            fx_chunks,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u8(self.is_override_parent_fx);
@@ -94,7 +98,10 @@ impl NodeInitialParams {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let prop_bundle = PropBundle::read(r, false, false)?;
         let prop_bundle_ranged = PropBundle::read(r, true, false)?;
-        Ok(Self { prop_bundle, prop_bundle_ranged })
+        Ok(Self {
+            prop_bundle,
+            prop_bundle_ranged,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.prop_bundle.write(w);
@@ -185,8 +192,16 @@ impl PositioningParams {
             }
         }
 
-        Ok(Self { flags, flags_3d, attenuation_id, path_mode, transition_time,
-                   path_vertices, path_list_items, automation_params })
+        Ok(Self {
+            flags,
+            flags_3d,
+            attenuation_id,
+            path_mode,
+            transition_time,
+            path_vertices,
+            path_list_items,
+            automation_params,
+        })
     }
 
     pub fn write(&self, w: &mut BinaryWriter) {
@@ -200,14 +215,20 @@ impl PositioningParams {
                 w.write_i32(self.transition_time.unwrap_or(0));
                 w.write_u32(self.path_vertices.len() as u32);
                 for v in &self.path_vertices {
-                    w.write_f32(v.x); w.write_f32(v.y); w.write_f32(v.z); w.write_i32(v.duration);
+                    w.write_f32(v.x);
+                    w.write_f32(v.y);
+                    w.write_f32(v.z);
+                    w.write_i32(v.duration);
                 }
                 w.write_u32(self.path_list_items.len() as u32);
                 for p in &self.path_list_items {
-                    w.write_u32(p.vertices_offset); w.write_u32(p.num_vertices);
+                    w.write_u32(p.vertices_offset);
+                    w.write_u32(p.num_vertices);
                 }
                 for a in &self.automation_params {
-                    w.write_f32(a.x_range); w.write_f32(a.y_range); w.write_f32(a.z_range);
+                    w.write_f32(a.x_range);
+                    w.write_f32(a.y_range);
+                    w.write_f32(a.z_range);
                 }
             }
         }
@@ -298,12 +319,25 @@ impl NodeBaseParams {
         let adv_settings_params = AdvSettingsParams::read(r)?;
         let state_chunk = StateChunk::read(r)?;
         let initial_rtpc = InitialRtpc::read(r)?;
-        let feedback_bus_id = if has_feedback { Some(r.read_u32()?) } else { None };
+        let feedback_bus_id = if has_feedback {
+            Some(r.read_u32()?)
+        } else {
+            None
+        };
 
         Ok(Self {
-            node_initial_fx_params, override_attachment_params, override_bus_id,
-            direct_parent_id, flags, node_initial_params, positioning_params,
-            aux_params, adv_settings_params, state_chunk, initial_rtpc, feedback_bus_id,
+            node_initial_fx_params,
+            override_attachment_params,
+            override_bus_id,
+            direct_parent_id,
+            flags,
+            node_initial_params,
+            positioning_params,
+            aux_params,
+            adv_settings_params,
+            state_chunk,
+            initial_rtpc,
+            feedback_bus_id,
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
@@ -323,4 +357,3 @@ impl NodeBaseParams {
         }
     }
 }
-

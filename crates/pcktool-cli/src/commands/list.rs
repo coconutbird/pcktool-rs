@@ -22,7 +22,7 @@ pub fn run(args: ListArgs) -> anyhow::Result<()> {
     let pck = PckFile::parse(&mmap)?;
 
     if args.streaming {
-        println!("{:<12} {:<10} {:<10} {}", "ID", "Size", "Language", "Block");
+        println!("{:<12} {:<10} {:<10} Block", "ID", "Size", "Language");
         println!("{}", "─".repeat(50));
         for entry in &pck.streaming_files {
             println!(
@@ -35,7 +35,7 @@ pub fn run(args: ListArgs) -> anyhow::Result<()> {
         }
         println!("\nTotal: {} streaming files", pck.streaming_files.len());
     } else if args.external {
-        println!("{:<18} {:<10} {:<10} {}", "ID", "Size", "Language", "Block");
+        println!("{:<18} {:<10} {:<10} Block", "ID", "Size", "Language");
         println!("{}", "─".repeat(56));
         for entry in &pck.external_files {
             println!(
@@ -48,7 +48,7 @@ pub fn run(args: ListArgs) -> anyhow::Result<()> {
         }
         println!("\nTotal: {} external files", pck.external_files.len());
     } else {
-        println!("{:<12} {:<10} {:<10} {}", "ID", "Size", "Language", "Block");
+        println!("{:<12} {:<10} {:<10} Block", "ID", "Size", "Language");
         println!("{}", "─".repeat(50));
         for entry in &pck.sound_banks {
             println!(
@@ -64,4 +64,3 @@ pub fn run(args: ListArgs) -> anyhow::Result<()> {
 
     Ok(())
 }
-

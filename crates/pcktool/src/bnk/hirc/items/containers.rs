@@ -2,10 +2,10 @@
 
 use alloc::vec::Vec;
 
-use crate::error::Result;
 use super::super::params::*;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
 
 // ─── RanSeqCntr ─────────────────────────────────────────────────────
 
@@ -44,10 +44,20 @@ impl RanSeqCntrValues {
         let children = Children::read(r)?;
         let playlist = Playlist::read(r)?;
         Ok(Self {
-            node_base_params, loop_count, loop_mod_min, loop_mod_max,
-            transition_time, transition_time_mod_min, transition_time_mod_max,
-            avoid_repeat_count, transition_mode, random_mode, mode, bit_vector,
-            children, playlist,
+            node_base_params,
+            loop_count,
+            loop_mod_min,
+            loop_mod_max,
+            transition_time,
+            transition_time_mod_min,
+            transition_time_mod_max,
+            avoid_repeat_count,
+            transition_mode,
+            random_mode,
+            mode,
+            bit_vector,
+            children,
+            playlist,
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
@@ -80,7 +90,10 @@ impl SwitchPackage {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let switch_id = r.read_u32()?;
         let node_ids = r.read_list_u32(|r| r.read_u32())?;
-        Ok(Self { switch_id, node_ids })
+        Ok(Self {
+            switch_id,
+            node_ids,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u32(self.switch_id);
@@ -139,8 +152,14 @@ impl SwitchCntrValues {
         let switch_list = r.read_list_u32(SwitchPackage::read)?;
         let switch_params = r.read_list_u32(SwitchNodeParams::read)?;
         Ok(Self {
-            node_base_params, group_type, group_id, default_switch,
-            is_continuous_validation, children, switch_list, switch_params,
+            node_base_params,
+            group_type,
+            group_id,
+            default_switch,
+            is_continuous_validation,
+            children,
+            switch_list,
+            switch_params,
         })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
@@ -167,7 +186,10 @@ impl AssociatedChildData {
     pub fn read(r: &mut BinaryReader) -> Result<Self> {
         let associated_child_id = r.read_u32()?;
         let curve = r.read_list_u32(RtpcGraphPoint::read)?;
-        Ok(Self { associated_child_id, curve })
+        Ok(Self {
+            associated_child_id,
+            curve,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u32(self.associated_child_id);
@@ -191,7 +213,13 @@ impl LayerValues {
         let rtpc_id = r.read_u32()?;
         let rtpc_type = r.read_u8()?;
         let associations = r.read_list_u32(AssociatedChildData::read)?;
-        Ok(Self { layer_id, initial_rtpc, rtpc_id, rtpc_type, associations })
+        Ok(Self {
+            layer_id,
+            initial_rtpc,
+            rtpc_id,
+            rtpc_type,
+            associations,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_u32(self.layer_id);
@@ -214,7 +242,11 @@ impl LayerCntrValues {
         let node_base_params = NodeBaseParams::read(r, has_feedback)?;
         let children = Children::read(r)?;
         let layers = r.read_list_u32(LayerValues::read)?;
-        Ok(Self { node_base_params, children, layers })
+        Ok(Self {
+            node_base_params,
+            children,
+            layers,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.node_base_params.write(w);
@@ -222,4 +254,3 @@ impl LayerCntrValues {
         w.write_list_u32(&self.layers, |w, l| l.write(w));
     }
 }
-

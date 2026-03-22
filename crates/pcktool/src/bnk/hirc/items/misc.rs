@@ -2,10 +2,10 @@
 
 use alloc::vec::Vec;
 
-use crate::error::Result;
 use super::super::params::*;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
 
 // ─── FeedbackNode ───────────────────────────────────────────────────
 
@@ -44,7 +44,10 @@ impl FeedbackNodeValues {
     pub fn read(r: &mut BinaryReader, has_feedback: bool) -> Result<Self> {
         let sources = r.read_list_u32(FeedbackSource::read)?;
         let node_base_params = NodeBaseParams::read(r, has_feedback)?;
-        Ok(Self { sources, node_base_params })
+        Ok(Self {
+            sources,
+            node_base_params,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         w.write_list_u32(&self.sources, |w, s| s.write(w));
@@ -66,7 +69,11 @@ impl ModulatorValues {
         let prop_bundle = PropBundle::read(r, false, true)?;
         let prop_bundle_ranged = PropBundle::read(r, true, true)?;
         let initial_rtpc = InitialRtpc::read(r)?;
-        Ok(Self { prop_bundle, prop_bundle_ranged, initial_rtpc })
+        Ok(Self {
+            prop_bundle,
+            prop_bundle_ranged,
+            initial_rtpc,
+        })
     }
     pub fn write(&self, w: &mut BinaryWriter) {
         self.prop_bundle.write(w);
@@ -74,4 +81,3 @@ impl ModulatorValues {
         self.initial_rtpc.write(w);
     }
 }
-

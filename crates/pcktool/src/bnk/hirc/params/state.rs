@@ -1,9 +1,9 @@
 //! State chunk types.
 
-use alloc::vec::Vec;
-use crate::error::Result;
 use super::super::reader::BinaryReader;
 use super::super::writer::BinaryWriter;
+use crate::error::Result;
+use alloc::vec::Vec;
 
 #[derive(Debug, Clone)]
 pub struct StateEntry {
@@ -38,7 +38,11 @@ impl StateChunk {
                     state_instance_id: r.read_u32()?,
                 });
             }
-            state_groups.push(StateGroup { state_group_id, state_sync_type, states });
+            state_groups.push(StateGroup {
+                state_group_id,
+                state_sync_type,
+                states,
+            });
         }
         Ok(Self { state_groups })
     }
@@ -55,4 +59,3 @@ impl StateChunk {
         }
     }
 }
-

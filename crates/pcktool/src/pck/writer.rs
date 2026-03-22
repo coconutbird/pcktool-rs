@@ -58,7 +58,9 @@ impl PckWriter {
         buf.extend_from_slice(&0u32.to_le_bytes()); // external_files_lut_size
 
         // Write language map
-        let lang_map = StringMap { entries: self.languages.clone() };
+        let lang_map = StringMap {
+            entries: self.languages.clone(),
+        };
         let lang_bytes = lang_map.write();
         let lang_map_size = lang_bytes.len() as u32;
         buf.extend_from_slice(&lang_bytes);
@@ -119,12 +121,12 @@ fn lut_size_64(count: usize) -> usize {
 }
 
 fn align_up(offset: usize, alignment: u32) -> usize {
-    if alignment <= 1 { return offset; }
+    if alignment <= 1 {
+        return offset;
+    }
     let a = alignment as usize;
-    (offset + a - 1) / a * a
+    offset.div_ceil(a) * a
 }
-
-
 
 /// Returns (start_block, block_size) for each entry.
 fn calc_start_blocks_32(

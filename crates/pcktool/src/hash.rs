@@ -67,4 +67,3 @@ mod tests {
         assert_eq!(fnv1_32("Hello"), fnv1_32("hello"));
     }
 }
-

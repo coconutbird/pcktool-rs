@@ -36,7 +36,13 @@ impl<'a> FileEntry<'a, u32> for SoundBankEntry<'a> {
         language_id: u32,
         data: &'a [u8],
     ) -> Self {
-        Self { id, block_size, start_block, language_id, data }
+        Self {
+            id,
+            block_size,
+            start_block,
+            language_id,
+            data,
+        }
     }
 }
 
@@ -63,7 +69,13 @@ impl<'a> FileEntry<'a, u32> for StreamingFileEntry<'a> {
         language_id: u32,
         data: &'a [u8],
     ) -> Self {
-        Self { id, block_size, start_block, language_id, data }
+        Self {
+            id,
+            block_size,
+            start_block,
+            language_id,
+            data,
+        }
     }
 }
 
@@ -81,4 +93,3 @@ pub struct ExternalFileEntry<'a> {
     /// Raw file data (borrows from the PCK file slice).
     pub data: &'a [u8],
 }
-
