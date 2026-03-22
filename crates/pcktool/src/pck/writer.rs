@@ -18,14 +18,14 @@ pub struct WriteEntry<K: Copy> {
 
 /// Builder for writing a PCK file to `Vec<u8>`.
 #[derive(Debug, Clone)]
-pub struct PckWriter {
+pub struct Writer {
     pub languages: HashMap<u32, String>,
     pub sound_banks: Vec<WriteEntry<u32>>,
     pub streaming_files: Vec<WriteEntry<u32>>,
     pub external_files: Vec<WriteEntry<u64>>,
 }
 
-impl PckWriter {
+impl Writer {
     /// Create a new empty writer.
     pub fn new() -> Self {
         Self {
@@ -106,7 +106,7 @@ impl PckWriter {
     }
 }
 
-impl Default for PckWriter {
+impl Default for Writer {
     fn default() -> Self {
         Self::new()
     }

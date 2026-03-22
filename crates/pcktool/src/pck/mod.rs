@@ -23,7 +23,7 @@ mod writer;
 
 pub use entry::{ExternalFileEntry, FileEntry, SoundBankEntry, StreamingFileEntry};
 pub use string_map::StringMap;
-pub use writer::PckWriter;
+pub use writer::{WriteEntry, Writer};
 
 use alloc::format;
 use alloc::string::String;
