@@ -5,7 +5,7 @@ use hashbrown::HashMap;
 
 use alloc::string::String;
 
-use super::{AKPK_TAG, PCK_VERSION, StringMap};
+use super::{AKPK_TAG, ByteOrder, PCK_VERSION, StringMap};
 
 /// An owned entry for writing into a PCK file.
 #[derive(Debug, Clone)]
@@ -19,6 +19,7 @@ pub struct WriteEntry<K: Copy> {
 /// Builder for writing a PCK file to `Vec<u8>`.
 #[derive(Debug, Clone)]
 pub struct Writer {
+    pub byte_order: ByteOrder,
     pub languages: HashMap<u32, String>,
     pub sound_banks: Vec<WriteEntry<u32>>,
     pub streaming_files: Vec<WriteEntry<u32>>,
@@ -26,9 +27,10 @@ pub struct Writer {
 }
 
 impl Writer {
-    /// Create a new empty writer.
+    /// Create a new empty writer (defaults to little-endian).
     pub fn new() -> Self {
         Self {
+            byte_order: ByteOrder::Little,
             languages: HashMap::new(),
             sound_banks: Vec::new(),
             streaming_files: Vec::new(),
@@ -38,30 +40,31 @@ impl Writer {
 
     /// Serialize the PCK file to bytes.
     pub fn to_bytes(&self) -> Vec<u8> {
+        let bo = self.byte_order;
         let mut buf = Vec::new();
 
-        // Tag
+        // Tag (ASCII — endian-neutral)
         buf.extend_from_slice(&AKPK_TAG.to_le_bytes());
 
         // Placeholder for header_size (offset 4)
         let header_size_pos = buf.len();
-        buf.extend_from_slice(&0u32.to_le_bytes());
+        buf.extend_from_slice(&bo.write_u32(0));
 
         // Version
-        buf.extend_from_slice(&PCK_VERSION.to_le_bytes());
+        buf.extend_from_slice(&bo.write_u32(PCK_VERSION));
 
         // Placeholders for section sizes (offset 12..28)
         let section_sizes_pos = buf.len();
-        buf.extend_from_slice(&0u32.to_le_bytes()); // language_map_size
-        buf.extend_from_slice(&0u32.to_le_bytes()); // sound_banks_lut_size
-        buf.extend_from_slice(&0u32.to_le_bytes()); // streaming_files_lut_size
-        buf.extend_from_slice(&0u32.to_le_bytes()); // external_files_lut_size
+        buf.extend_from_slice(&bo.write_u32(0)); // language_map_size
+        buf.extend_from_slice(&bo.write_u32(0)); // sound_banks_lut_size
+        buf.extend_from_slice(&bo.write_u32(0)); // streaming_files_lut_size
+        buf.extend_from_slice(&bo.write_u32(0)); // external_files_lut_size
 
         // Write language map
         let lang_map = StringMap {
             entries: self.languages.clone(),
         };
-        let lang_bytes = lang_map.write();
+        let lang_bytes = lang_map.write(bo);
         let lang_map_size = lang_bytes.len() as u32;
         buf.extend_from_slice(&lang_bytes);
 
@@ -81,9 +84,9 @@ impl Writer {
         let ext_blocks = calc_start_blocks_64(&self.external_files, &mut current_offset);
 
         // Write LUT headers
-        write_lut_32(&mut buf, &self.sound_banks, &bank_blocks);
-        write_lut_32(&mut buf, &self.streaming_files, &stm_blocks);
-        write_lut_64(&mut buf, &self.external_files, &ext_blocks);
+        write_lut_32(&mut buf, &self.sound_banks, &bank_blocks, bo);
+        write_lut_32(&mut buf, &self.streaming_files, &stm_blocks, bo);
+        write_lut_64(&mut buf, &self.external_files, &ext_blocks, bo);
 
         // Write file data at correct offsets
         let total_size = current_offset;
@@ -93,14 +96,14 @@ impl Writer {
         write_data_64(&mut buf, &self.external_files, &ext_blocks);
 
         // Patch header sizes
-        buf[header_size_pos..header_size_pos + 4].copy_from_slice(&header_size.to_le_bytes());
-        buf[section_sizes_pos..section_sizes_pos + 4].copy_from_slice(&lang_map_size.to_le_bytes());
+        buf[header_size_pos..header_size_pos + 4].copy_from_slice(&bo.write_u32(header_size));
+        buf[section_sizes_pos..section_sizes_pos + 4].copy_from_slice(&bo.write_u32(lang_map_size));
         buf[section_sizes_pos + 4..section_sizes_pos + 8]
-            .copy_from_slice(&(banks_lut_size as u32).to_le_bytes());
+            .copy_from_slice(&bo.write_u32(banks_lut_size as u32));
         buf[section_sizes_pos + 8..section_sizes_pos + 12]
-            .copy_from_slice(&(stm_lut_size as u32).to_le_bytes());
+            .copy_from_slice(&bo.write_u32(stm_lut_size as u32));
         buf[section_sizes_pos + 12..section_sizes_pos + 16]
-            .copy_from_slice(&(ext_lut_size as u32).to_le_bytes());
+            .copy_from_slice(&bo.write_u32(ext_lut_size as u32));
 
         buf
     }
@@ -165,25 +168,35 @@ fn calc_start_blocks_64(
     blocks
 }
 
-fn write_lut_32(buf: &mut Vec<u8>, entries: &[WriteEntry<u32>], blocks: &[(u32, u32)]) {
-    buf.extend_from_slice(&(entries.len() as u32).to_le_bytes());
+fn write_lut_32(
+    buf: &mut Vec<u8>,
+    entries: &[WriteEntry<u32>],
+    blocks: &[(u32, u32)],
+    bo: ByteOrder,
+) {
+    buf.extend_from_slice(&bo.write_u32(entries.len() as u32));
     for (i, entry) in entries.iter().enumerate() {
-        buf.extend_from_slice(&entry.id.to_le_bytes());
-        buf.extend_from_slice(&entry.block_size.to_le_bytes());
-        buf.extend_from_slice(&(entry.data.len() as i32).to_le_bytes());
-        buf.extend_from_slice(&blocks[i].0.to_le_bytes());
-        buf.extend_from_slice(&entry.language_id.to_le_bytes());
+        buf.extend_from_slice(&bo.write_u32(entry.id));
+        buf.extend_from_slice(&bo.write_u32(entry.block_size));
+        buf.extend_from_slice(&bo.write_i32(entry.data.len() as i32));
+        buf.extend_from_slice(&bo.write_u32(blocks[i].0));
+        buf.extend_from_slice(&bo.write_u32(entry.language_id));
     }
 }
 
-fn write_lut_64(buf: &mut Vec<u8>, entries: &[WriteEntry<u64>], blocks: &[(u32, u32)]) {
-    buf.extend_from_slice(&(entries.len() as u32).to_le_bytes());
+fn write_lut_64(
+    buf: &mut Vec<u8>,
+    entries: &[WriteEntry<u64>],
+    blocks: &[(u32, u32)],
+    bo: ByteOrder,
+) {
+    buf.extend_from_slice(&bo.write_u32(entries.len() as u32));
     for (i, entry) in entries.iter().enumerate() {
-        buf.extend_from_slice(&entry.id.to_le_bytes());
-        buf.extend_from_slice(&entry.block_size.to_le_bytes());
-        buf.extend_from_slice(&(entry.data.len() as i32).to_le_bytes());
-        buf.extend_from_slice(&blocks[i].0.to_le_bytes());
-        buf.extend_from_slice(&entry.language_id.to_le_bytes());
+        buf.extend_from_slice(&bo.write_u64(entry.id));
+        buf.extend_from_slice(&bo.write_u32(entry.block_size));
+        buf.extend_from_slice(&bo.write_i32(entry.data.len() as i32));
+        buf.extend_from_slice(&bo.write_u32(blocks[i].0));
+        buf.extend_from_slice(&bo.write_u32(entry.language_id));
     }
 }
 

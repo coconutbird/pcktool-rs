@@ -27,6 +27,7 @@ fn round_trip_sounds_pck() {
 
     // ── Build a Writer from the parsed data ──
     let mut writer = Writer::new();
+    writer.byte_order = original.byte_order;
 
     // Languages
     for (&id, name) in &original.languages {

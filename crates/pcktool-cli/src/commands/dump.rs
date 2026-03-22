@@ -54,14 +54,16 @@ fn dump_pck(data: &[u8], out_dir: &std::path::Path, filter_id: Option<u32>) -> a
     let pck = PckFile::parse(data)?;
     let mut count = 0u32;
 
-    // Dump sound banks
-    let banks_dir = out_dir.join("banks");
-    fs::create_dir_all(&banks_dir)?;
+    // Dump sound banks, sorted by language
     for entry in &pck.sound_banks {
         if filter_id.is_some() && filter_id != Some(entry.id) {
             continue;
         }
-        let path = banks_dir.join(format!("{:08X}.bnk", entry.id));
+        let lang = pck.language_name(entry.language_id);
+        let lang_dir = out_dir.join(lang).join("banks");
+        fs::create_dir_all(&lang_dir)?;
+
+        let path = lang_dir.join(format!("{:08X}.bnk", entry.id));
         fs::write(&path, entry.data)?;
         println!("  → {}", path.display());
         count += 1;
@@ -70,7 +72,7 @@ fn dump_pck(data: &[u8], out_dir: &std::path::Path, filter_id: Option<u32>) -> a
         if let Ok(bank) = SoundBank::parse(entry.data)
             && !bank.media.is_empty()
         {
-            let media_dir = banks_dir.join(format!("{:08X}_media", entry.id));
+            let media_dir = lang_dir.join(format!("{:08X}_media", entry.id));
             fs::create_dir_all(&media_dir)?;
             for (&id, &wem_data) in &bank.media {
                 let wem_path = media_dir.join(format!("{id:08X}.wem"));
@@ -81,24 +83,28 @@ fn dump_pck(data: &[u8], out_dir: &std::path::Path, filter_id: Option<u32>) -> a
         }
     }
 
-    // Dump streaming files
-    let stm_dir = out_dir.join("streaming");
-    fs::create_dir_all(&stm_dir)?;
+    // Dump streaming files, sorted by language
     for entry in &pck.streaming_files {
         if filter_id.is_some() && filter_id != Some(entry.id) {
             continue;
         }
+        let lang = pck.language_name(entry.language_id);
+        let stm_dir = out_dir.join(lang).join("streaming");
+        fs::create_dir_all(&stm_dir)?;
+
         let path = stm_dir.join(format!("{:08X}.wem", entry.id));
         fs::write(&path, entry.data)?;
         println!("  → {}", path.display());
         count += 1;
     }
 
-    // Dump external files
+    // Dump external files, sorted by language
     if !pck.external_files.is_empty() {
-        let ext_dir = out_dir.join("external");
-        fs::create_dir_all(&ext_dir)?;
         for entry in &pck.external_files {
+            let lang = pck.language_name(entry.language_id);
+            let ext_dir = out_dir.join(lang).join("external");
+            fs::create_dir_all(&ext_dir)?;
+
             let path = ext_dir.join(format!("{:016X}.wem", entry.id));
             fs::write(&path, entry.data)?;
             println!("  → {}", path.display());
