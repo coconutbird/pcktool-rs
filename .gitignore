@@ -1,5 +1,6 @@
 # Reference implementation
 /ref/
+/Sounds.pck
 
 # Rust build artifacts
 /target/
@@ -21,4 +22,3 @@ Thumbs.db
 
 # Environment
 .env
-

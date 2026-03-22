@@ -18,6 +18,7 @@
 //! - `INIT` — Plugin initialization
 
 mod chunks;
+pub mod hirc;
 
 pub use chunks::{BankHeader, MediaIndex, MediaEntry};
 
